@@ -1,5 +1,4 @@
 
-
 class Application:
 
     def run(self, event):
@@ -9,4 +8,9 @@ class Application:
         :param event:
         :return:
         """
+        # Validate Event
+
+        # Populate Fields on Model
+
+        # Publish
         pass

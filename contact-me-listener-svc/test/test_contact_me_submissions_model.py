@@ -2,7 +2,13 @@ import unittest
 from src.app.model.contact_me_submission import ContactMeSubmission
 
 
-class MyTestCase(unittest.TestCase):
+class TestContactMeSubmissionsModel(unittest.TestCase):
+    """Tests for ContactMeSUbmissionModel
+
+    * only testing helper methods
+    * intentionally not testing getters/setters.
+    """
+
     def test_can_convert_object_to_json(self):
         expected_json_output = '{"contact_name": "john", "contact_email": "contact@email.com", "contact_message": "you got something wrong..."}'
         # prepare test object
