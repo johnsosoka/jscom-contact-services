@@ -47,7 +47,6 @@ class TestContactMeEventValidator(unittest.TestCase):
         event["queryStringParameters"].pop("user_name")
 
         actual_validation_status = self._test_validator.required_query_params_present(event)
-
         self.assertEqual(actual_validation_status, False)
 
     def get_valid_event(self):
