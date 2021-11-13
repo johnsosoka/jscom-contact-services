@@ -1,12 +1,6 @@
-import boto3
+from app.application import Application
 
 
 def lambda_handler(event, context):
-    query_params = event["queryStringParameters"]
-
-
-def configure():
-    # TODO
-    #  fetch log level from env
-    #  set logger log level.
-    pass
+    app = Application()
+    return app.handle(event)

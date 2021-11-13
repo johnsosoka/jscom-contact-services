@@ -22,13 +22,15 @@ class Application:
         self._contact_event_validator = ContactEventValidator()
         self._sns_publisher = SNSPublisher()
 
-    def run(self, event):
+    def handle(self, event):
         """Handle form submit event
 
         process, validate & submit event to SNS.
         :param event:
         :return:
         """
+        logger.debug("handling event {}".format(str(event)))
+
         # Validate Event
         is_event_valid = self._contact_event_validator.validate_event(event)
 

@@ -11,9 +11,6 @@ class ContactMeSubmission:
         self._contact_name = ''
         self._contact_email = ''
         self._contact_message = ''
-        # self._contact_source_ip = ''
-        # self._contact_user_agent = ''
-        # self._contact_request_time = ''
 
     @property
     def contact_name(self) -> str:
