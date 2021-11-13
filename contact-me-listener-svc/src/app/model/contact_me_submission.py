@@ -54,5 +54,5 @@ class ContactMeSubmission:
         """
         for key in dict_to_convert.keys():
             new_key = key[1:]  # strip first character of original key
-            dict_to_convert[new_key] = dict_to_convert.pop(key)  # swap replace old value with new value
+            dict_to_convert[new_key] = dict_to_convert.pop(key)  # swap old value with new value
         return dict_to_convert

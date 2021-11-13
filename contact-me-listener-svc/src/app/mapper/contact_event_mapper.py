@@ -5,7 +5,7 @@ from app.model.contact_me_submission import ContactMeSubmission
 class ContactEventMapper:
 
     @staticmethod
-    def map_event_to_contact_model(event: dict):
+    def map_event_to_contact_model(event: dict) -> ContactMeSubmission:
         mapped_model = ContactMeSubmission()
 
         relevant_event_params = event[FIELD_QUERY_STRING_PARAMS]
