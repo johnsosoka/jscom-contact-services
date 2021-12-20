@@ -15,7 +15,6 @@ resource "aws_cloudwatch_log_group" "api_gateway_log_group" {
   }
 }
 
-# TODO not receiving query params....
 module "api_gateway" {
   source = "terraform-aws-modules/apigateway-v2/aws"
 
@@ -50,7 +49,7 @@ module "api_gateway" {
     }
 
     "$default" = {
-      lambda_arn = module.lambda_function.lambda_function_invoke_arn #TODO double check this value
+      lambda_arn = module.lambda_function.lambda_function_invoke_arn
     }
   }
 
@@ -60,8 +59,6 @@ module "api_gateway" {
 }
 
 # Invoke Permissions
-
-
 
 resource "aws_lambda_permission" "lambda_permission" {
   statement_id  = "AllowContactServiceAPIInvoke"
@@ -74,18 +71,14 @@ resource "aws_lambda_permission" "lambda_permission" {
   source_arn = "${module.api_gateway.apigatewayv2_api_execution_arn}/*/*/*"
 }
 
-# TODO retest after a time. If not working
+resource "aws_route53_record" "api_gateway_dns" {
+  name    = "api.johnsosoka.com"
+  type    = "A"
+  zone_id = data.terraform_remote_state.jscom_common_data.outputs.root_johnsosokacom_zone_id
 
-//resource "aws_route53_record" "api_gateway_dns" {
-//  name    = "api.johnsosoka.com"
-//  type    = "A"
-//  zone_id = aws_route53_zone.zone.id # TODO output variable.
-//
-//  alias {
-//    evaluate_target_health = true
-//    #name                   = aws_api_gateway_domain_name.api_domain.regional_domain_name
-//    name                   = module.api_gateway.apigatewayv2_domain_name_target_domain_name
-//    #zone_id                = aws_api_gateway_domain_name.api_domain.regional_zone_id
-//    zone_id                 = module.api_gateway.apigatewayv2_domain_name_hosted_zone_id
-//  }
-//}
+  alias {
+    evaluate_target_health = true
+    name                   = module.api_gateway.apigatewayv2_domain_name_target_domain_name
+    zone_id                 = module.api_gateway.apigatewayv2_domain_name_hosted_zone_id
+  }
+}
