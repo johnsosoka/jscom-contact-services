@@ -14,6 +14,7 @@ import json
 import os
 
 logger = logging.getLogger("app.Application")
+logger.setLevel(logging.DEBUG)
 
 
 class Application:
@@ -46,11 +47,12 @@ class Application:
             logger.error("ARN Does not appear to be set for env property {}".format(TOPIC_ARN_KEY))
             return self.prepare_message(500, FAILURE_EXECUTION, GENERIC_FAILURE_MESSAGE)
 
-        # Publish
+
         try:
             self._sns_publisher.publish_message(topic_arn, contact_me_submission.to_json())
         except Exception as e:
-            logger.error("Exception publishing to topic_arn {}".format(topic_arn), e)
+            logger.error("Exception publishing to topic_arn {arn}".format(arn=topic_arn))
+            logger.error(e)
             return self.prepare_message(500, FAILURE_EXECUTION, PUBLISH_FAILURE_MESSAGE)
 
         return self.prepare_message(200, SUCCESS_EXECUTION, PUBLISH_SUCCESS_MESSAGE)

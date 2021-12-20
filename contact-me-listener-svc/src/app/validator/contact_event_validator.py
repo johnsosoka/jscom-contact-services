@@ -1,4 +1,6 @@
 import logging
+from app.util.body_extractor_util import BodyExtractorUtil
+
 logger = logging.getLogger("app.validator.ContactEventValidator")
 
 
@@ -18,20 +20,20 @@ class ContactEventValidator:
         pass
 
     @staticmethod
-    def query_params_key_present(event: dict) -> bool:
-        # params exist
+    def body_param_present(event: dict) -> bool:
+        # aws moves query params to the body of the request & base64 encodes it.
         is_valid = True
-        if "queryStringParameters" not in event.keys():
-            logger.warning("query string parameters not present in request.")
+        if "body" not in event.keys():
+            logger.warning("No request body / base64 encoded query params to process.")
             is_valid = False
         return is_valid
 
     @staticmethod
-    def required_query_params_present(event: dict) -> bool:
+    def required_query_params_present(decoded_body: dict) -> bool:
         is_valid = True
-        params_to_validate = event["queryStringParameters"].keys()
+        params_to_validate = decoded_body.keys()
 
-        if "user_email" not in event["queryStringParameters"].keys():
+        if "user_email" not in params_to_validate:
             is_valid = False
             logger.warning("user_email missing from contact submission")
         if "user_message" not in params_to_validate:
@@ -43,11 +45,11 @@ class ContactEventValidator:
         return is_valid
 
     def validate_event(self, event):
-        params_key_exist = self.query_params_key_present(event)
-
-        if not params_key_exist:
+        if not self.body_param_present(event):
             return False
 
-        required_param_fields_present = self.required_query_params_present(event)
+        sanitized_dict = BodyExtractorUtil.decode_body_params_to_dict(event["body"])
+
+        required_param_fields_present = self.required_query_params_present(sanitized_dict)
 
         return required_param_fields_present
