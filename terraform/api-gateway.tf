@@ -1,11 +1,4 @@
-data "terraform_remote_state" "jscom_common_data" {
-  backend = "s3"
-  config = {
-    bucket = "johnsosoka-com-tf-backend"
-    key = "project/johnsosoka.com-blog/state/terraform.tfstate"
-    region = "us-east-1"
-  }
-}
+
 
 resource "aws_cloudwatch_log_group" "api_gateway_log_group" {
   name = "/aws/gateway/contact_me_api_gateway_logs"
@@ -41,29 +34,28 @@ module "api_gateway" {
 
   # Routes and integrations
   integrations = {
-    "POST /services/form/contact" = {
-      lambda_arn             = module.lambda_function.lambda_function_invoke_arn
+    "POST /contact" = {
+      lambda_arn             = module.contact-listener.lambda_function_arn
       payload_format_version = "2.0"
 
       timeout_milliseconds   = 12000
     }
 
     "$default" = {
-      lambda_arn = module.lambda_function.lambda_function_invoke_arn
+      lambda_arn = module.contact-listener.lambda_function_arn
     }
   }
 
   tags = {
-    Name = "http-api-gateway jscom-contact-me-listener-svc"
+    Name = "jscom contact services"
   }
 }
 
 # Invoke Permissions
-
-resource "aws_lambda_permission" "lambda_permission" {
+resource "aws_lambda_permission" "contact_listener_lambda_permission" {
   statement_id  = "AllowContactServiceAPIInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = module.lambda_function.lambda_function_name
+  function_name = module.contact-listener.lambda_function_name
   principal     = "apigateway.amazonaws.com"
 
   # The /*/*/* part allows invocation from any stage, method and resource path
