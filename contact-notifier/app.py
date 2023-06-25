@@ -5,6 +5,7 @@ import os
 # Get queue URL from environment variable
 queue_url = os.environ['CONTACT_MESSAGE_QUEUE_URL']
 
+
 def lambda_handler(event, context):
     # Get the message from the event
     message = event['Records'][0]['body']

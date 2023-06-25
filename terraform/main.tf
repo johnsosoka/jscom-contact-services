@@ -7,7 +7,7 @@ terraform {
   backend "s3" {
     // WARNING  -- Couldn't read from variables.tf in this block!!
     bucket         = "jscom-tf-backend"
-    key            = "project/jscom-blog/state/terraform.tfstate"
+    key            = "project/jscom-contact-services/state/terraform.tfstate"
     region         = "us-west-2"
     dynamodb_table = "terraform-state"
   }
