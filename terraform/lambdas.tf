@@ -5,14 +5,14 @@
 module "contact-listener" {
   source = "terraform-aws-modules/lambda/aws"
 
-  function_name = var.contact_listener_lambda_name
-  description   = "contact me submission listener"
-  handler       = "app.lambda_handler"
-  runtime       = "python3.8"
-  source_path = "../contact-listener/"
+  function_name      = var.contact_listener_lambda_name
+  description        = "contact me submission listener"
+  handler            = "app.lambda_handler"
+  runtime            = "python3.8"
+  source_path        = "../contact-listener/"
   attach_policy_json = true
   policy_json        = jsonencode({
-    Version = "2012-10-17"
+    Version   = "2012-10-17"
     Statement = [
       {
         Effect = "Allow"
@@ -28,9 +28,9 @@ module "contact-listener" {
     CONTACT_MESSAGE_QUEUE_URL = aws_sqs_queue.contact_message_queue.id
   }
 
-#  tags = {
-#    Name = "jscom-contact-services"
-#  }
+  tags = {
+    project = local.project_name
+  }
 }
 
 ################################
@@ -98,6 +98,10 @@ module "contact-filter" {
     CONTACT_NOTIFY_QUEUE_URL        = aws_sqs_queue.contact_notify_queue.id
     CONTACT_MESSAGE_QUEUE_URL      = aws_sqs_queue.contact_message_queue.id
   }
+
+  tags = {
+    project = local.project_name
+  }
 }
 
 resource "aws_lambda_event_source_mapping" "contact_filter_mapping" {
@@ -145,6 +149,10 @@ module "contact-notifier" {
       }
     ]
   })
+
+  tags = {
+    project = local.project_name
+  }
 }
 
 resource "aws_lambda_event_source_mapping" "contact_notifier_mapping" {

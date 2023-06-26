@@ -66,6 +66,10 @@ resource "aws_dynamodb_table" "all_contact_messages" {
     write_capacity     = 1
     read_capacity      = 1
   }
+
+  tags = {
+    project = local.project_name
+  }
 }
 
 # Table for tracking blocked contacts
@@ -125,5 +129,9 @@ resource "aws_dynamodb_table" "blocked_contacts" {
     projection_type    = "ALL"
     write_capacity     = 1
     read_capacity      = 1
+  }
+
+  tags = {
+    project = local.project_name
   }
 }

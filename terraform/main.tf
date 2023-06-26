@@ -21,3 +21,7 @@ data "terraform_remote_state" "jscom_common_data" {
     region = "us-west-2"
   }
 }
+
+locals {
+  project_name = "jscom-contact-services"
+}
