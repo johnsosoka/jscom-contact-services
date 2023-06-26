@@ -119,7 +119,7 @@ module "contact-notifier" {
   source_path        = "../contact-notifier/"
   attach_policy_json = true
   environment_variables = {
-    CONTACT_MESSAGE_QUEUE_URL = aws_sqs_queue.contact_message_queue.id
+    CONTACT_NOTIFY_QUEUE = aws_sqs_queue.contact_notify_queue.id
   }
   policy_json        = jsonencode({
     Version   = "2012-10-17"

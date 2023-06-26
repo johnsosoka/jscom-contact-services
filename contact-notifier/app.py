@@ -3,7 +3,7 @@ import boto3
 import os
 
 # Get queue URL from environment variable
-queue_url = os.environ['CONTACT_MESSAGE_QUEUE_URL']
+queue_url = os.environ['CONTACT_NOTIFY_QUEUE']
 
 
 def lambda_handler(event, context):
