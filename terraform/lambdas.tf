@@ -6,10 +6,10 @@ module "contact-listener" {
   source = "terraform-aws-modules/lambda/aws"
 
   function_name      = var.contact_listener_lambda_name
-  description        = "contact me submission listener"
-  handler            = "app.lambda_handler"
+  description        = "receives contact me messages from contact form, performs simple validation and forwards them to contact-message-queue"
+  handler            = "contact_listener_lambda.lambda_handler"
   runtime            = "python3.8"
-  source_path        = "../contact-listener/"
+  source_path        = "../lambdas/src/contact_listener_lambda.py"
   attach_policy_json = true
   policy_json        = jsonencode({
     Version   = "2012-10-17"
@@ -41,10 +41,10 @@ module "contact-filter" {
   source = "terraform-aws-modules/lambda/aws"
 
   function_name      = var.contact_filter_lambda_name
-  description        = "contact me submission filter lambda"
-  handler            = "app.lambda_handler"
+  description        = "Filters blocked contact me messages from contact-message-queue. Forwards valid messages to contact-notify-queue."
+  handler            = "contact_filter_lambda.lambda_handler"
   runtime            = "python3.8"
-  source_path        = "../contact-filter/"
+  source_path        = "../lambdas/src/contact_filter_lambda.py"
   attach_policy_json = true
   policy_json        = jsonencode({
     Version   = "2012-10-17"
@@ -117,10 +117,10 @@ module "contact-notifier" {
   source = "terraform-aws-modules/lambda/aws"
 
   function_name      = var.contact_notifier_lambda_name
-  description        = "contact me notifier lambda"
-  handler            = "app.lambda_handler"
+  description        = "Receive messages from contact-notify-queue, formats and send messages to admin email."
+  handler            = "contact_notifier_lambda.lambda_handler"
   runtime            = "python3.8"
-  source_path        = "../contact-notifier/"
+  source_path        = "../lambdas/src/contact_notifier_lambda.py"
   attach_policy_json = true
   environment_variables = {
     CONTACT_NOTIFY_QUEUE = aws_sqs_queue.contact_notify_queue.id
