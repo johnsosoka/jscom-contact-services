@@ -1,12 +1,3 @@
-data "terraform_remote_state" "jscom_common_data" {
-  backend = "s3"
-  config = {
-    bucket = "johnsosoka-com-tf-backend"
-    key = "project/johnsosoka.com-blog/state/terraform.tfstate"
-    region = "us-east-1"
-  }
-}
-
 resource "aws_cloudwatch_log_group" "api_gateway_log_group" {
   name = "/aws/gateway/contact_me_api_gateway_logs"
 
@@ -14,6 +5,15 @@ resource "aws_cloudwatch_log_group" "api_gateway_log_group" {
     site = "johnsosoka-com"
   }
 }
+
+// ACM & Cloudfront.
+resource "aws_acm_certificate" "api_acm_cert" {
+  // We want a wildcard cert so we can host subdomains later.
+  domain_name       = "api.johnsosoka.com"
+  validation_method = "EMAIL"
+
+}
+
 
 module "api_gateway" {
   source = "terraform-aws-modules/apigateway-v2/aws"
@@ -33,7 +33,7 @@ module "api_gateway" {
 
   # Custom domain
   domain_name                 = "api.johnsosoka.com"
-  domain_name_certificate_arn = data.terraform_remote_state.jscom_common_data.outputs.jscom_acm_cert
+  domain_name_certificate_arn = aws_acm_certificate.api_acm_cert.arn
 
   # Access logs
   default_stage_access_log_destination_arn = aws_cloudwatch_log_group.api_gateway_log_group.arn
@@ -41,20 +41,20 @@ module "api_gateway" {
 
   # Routes and integrations
   integrations = {
-    "POST /services/form/contact" = {
-      lambda_arn             = module.lambda_function.lambda_function_invoke_arn
+    "POST /v1/contact" = {
+      lambda_arn             = module.contact-listener.lambda_function_invoke_arn
       payload_format_version = "2.0"
 
       timeout_milliseconds   = 12000
     }
 
     "$default" = {
-      lambda_arn = module.lambda_function.lambda_function_invoke_arn
+      lambda_arn = module.contact-listener.lambda_function_invoke_arn
     }
   }
 
   tags = {
-    Name = "http-api-gateway jscom-contact-me-listener-svc"
+    Name = "jscom-contact-services"
   }
 }
 
@@ -63,7 +63,7 @@ module "api_gateway" {
 resource "aws_lambda_permission" "lambda_permission" {
   statement_id  = "AllowContactServiceAPIInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = module.lambda_function.lambda_function_name
+  function_name = module.contact-listener.lambda_function_name
   principal     = "apigateway.amazonaws.com"
 
   # The /*/*/* part allows invocation from any stage, method and resource path
@@ -78,7 +78,7 @@ resource "aws_route53_record" "api_gateway_dns" {
 
   alias {
     evaluate_target_health = true
-    name                   = module.api_gateway.apigatewayv2_domain_name_target_domain_name
+    name                   =  module.api_gateway.apigatewayv2_domain_name_target_domain_name
     zone_id                 = module.api_gateway.apigatewayv2_domain_name_hosted_zone_id
   }
 }

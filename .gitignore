@@ -2,9 +2,14 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+.idea
+*.iml
 # C extensions
 *.so
+.DS_Store
+terraform/.terraform*
+terraform/builds/
+
 
 # Distribution / packaging
 .Python
