@@ -21,6 +21,8 @@ Reads messages from the `contact-notify` SQS queue and sends them to the configu
 
 ### contact-administration
 
+(Not yet implemented)
+
 Service provides several methods for contact administration
 
 * block contact
