@@ -27,7 +27,7 @@ logger.setLevel(logging.INFO)
 def lambda_handler(event, context):
     # Loop through messages in SQS queue
     for message in event['Records']:
-        # Parse message body
+        # Deserialize message body
         message_body = json.loads(message['body'])
 
         # Extract message fields
@@ -37,16 +37,18 @@ def lambda_handler(event, context):
         ip_address = message_body.get('ip_address')
         user_agent = message_body.get('user_agent')
 
+        # Extract additional fields if they exist
+        company_name = message_body.get('company_name', None)
+        industry = message_body.get('industry', None)
+        contact_type = message_body.get('contact_type', 'standard')
+
         # Check if IP address is blocked
         is_blocked = False
-        # Create the KeyConditionExpression for the query
-        # Create the FilterExpression for the scan
         filter_expression = 'ip_address = :ip_address'
         expression_attribute_values = {
             ':ip_address': {'S': ip_address}
         }
 
-        # Scan the table for items with the specified IP address
         response = blocked_contacts_table.scan(
             FilterExpression=filter_expression,
             ExpressionAttributeValues=expression_attribute_values
@@ -57,23 +59,30 @@ def lambda_handler(event, context):
             logger.info(f'IP address {ip_address} is blocked')
 
         timestamp = datetime.datetime.now()
-        # Insert message into all_contact_messages table
-        all_contact_messages_table.put_item(
-            Item={
-                'id': str(uuid.uuid4()),
-                'contact_email': contact_email,
-                'contact_message': contact_message,
-                'contact_name': contact_name,
-                'ip_address': ip_address,
-                'user_agent': user_agent,
-                'timestamp': int(timestamp.timestamp()),
-                'is_blocked': int(is_blocked)
-            }
-        )
 
-        # Publish message to contact_notify_queue if IP address is not blocked
+        # Insert a message into all_contact_messages table
+        item = {
+            'id': str(uuid.uuid4()),
+            'contact_email': contact_email,
+            'contact_message': contact_message,
+            'contact_name': contact_name,
+            'ip_address': ip_address,
+            'user_agent': user_agent,
+            'timestamp': int(timestamp.timestamp()),
+            'is_blocked': int(is_blocked),
+            'contact_type': contact_type
+        }
+
+        if company_name:
+            item['company_name'] = company_name
+        if industry:
+            item['industry'] = industry
+
+        all_contact_messages_table.put_item(Item=item)
+
+        # Publish a message to contact_notify_queue if IP address is not blocked
         if not is_blocked:
-            print("Contact isn't blocked. Sending to notification queue")
+            logger.info("Contact isn't blocked. Sending to notification queue")
             response = sqs.send_message(
                 QueueUrl=contact_notify_queue_url,
                 MessageBody=json.dumps(message_body)
@@ -85,4 +94,3 @@ def lambda_handler(event, context):
             QueueUrl=contact_message_queue_url,
             ReceiptHandle=message['receiptHandle']
         )
-
