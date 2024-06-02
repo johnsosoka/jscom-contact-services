@@ -1,0 +1,70 @@
+{
+	"info": {
+		"_postman_id": "6163449e-504a-4109-a448-5ac5a59f0267",
+		"name": "jscom-contact-services",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "18046817"
+	},
+	"item": [
+		{
+			"name": "Contact Message (Standard)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"contact_email\": \"john@sosoka.com\",\n    \"contact_message\": \"Standard contact message from Postman\",\n    \"contact_name\": \"JR Sosoka\",\n    \"consulting_contact\": false\n  }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://api.johnsosoka.com/v1/contact",
+					"protocol": "https",
+					"host": [
+						"api",
+						"johnsosoka",
+						"com"
+					],
+					"path": [
+						"v1",
+						"contact"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Contact Message (Consulting)",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"contact_email\": \"john@sosoka.com\",\n    \"contact_message\": \"Consulting contact message from Postman\",\n    \"contact_name\": \"JR Sosoka\",\n    \"company_name\": \"JS Consulting\",\n    \"industry\": \"Tech\",\n    \"consulting_contact\": true\n  }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://api.johnsosoka.com/v1/contact",
+					"protocol": "https",
+					"host": [
+						"api",
+						"johnsosoka",
+						"com"
+					],
+					"path": [
+						"v1",
+						"contact"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
