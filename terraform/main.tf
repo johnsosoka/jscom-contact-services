@@ -16,9 +16,9 @@ terraform {
 data "terraform_remote_state" "jscom_common_data" {
   backend = "s3"
   config = {
-    bucket = "jscom-tf-backend"
-    key = "project/jscom-core-infra/state/terraform.tfstate"
-    region = "us-west-2"
+    bucket  = "jscom-tf-backend"
+    key     = "project/jscom-core-infra/state/terraform.tfstate"
+    region  = "us-west-2"
   }
 }
 
