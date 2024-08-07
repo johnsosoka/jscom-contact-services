@@ -14,9 +14,9 @@ resource "aws_acm_certificate" "api_acm_cert" {
 
 }
 
-
 module "api_gateway" {
-  source = "terraform-aws-modules/apigateway-v2/aws"
+  source  = "terraform-aws-modules/apigateway-v2/aws"
+  version = "2.2.2"
 
   name          = "${var.listener_api_name}-gateway"
   description   = "api gateway setup for contact me submissions"
@@ -28,12 +28,10 @@ module "api_gateway" {
     allow_origins = ["*"]
   }
 
-  create_api_domain_name           = true
-
-
   # Custom domain
+  create_api_domain_name      = true
   domain_name                 = "api.johnsosoka.com"
-  domain_name_certificate_arn = aws_acm_certificate.api_acm_cert.arn
+  domain_name_certificate_arn = data.terraform_remote_state.jscom_common_data.outputs.jscom_acm_cert
 
   # Access logs
   default_stage_access_log_destination_arn = aws_cloudwatch_log_group.api_gateway_log_group.arn
