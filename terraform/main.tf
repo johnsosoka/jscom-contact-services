@@ -1,4 +1,5 @@
 provider "aws" {
+  profile = "j3-terraform-ro"
   region = "us-west-2"
 }
 
@@ -6,6 +7,7 @@ provider "aws" {
 terraform {
   backend "s3" {
     // WARNING  -- Couldn't read from variables.tf in this block!!
+    profile        = "j3-terraform-ro"
     bucket         = "jscom-tf-backend"
     key            = "project/jscom-contact-services/state/terraform.tfstate"
     region         = "us-west-2"
@@ -16,6 +18,7 @@ terraform {
 data "terraform_remote_state" "jscom_common_data" {
   backend = "s3"
   config = {
+    profile = "j3-terraform-ro"
     bucket  = "jscom-tf-backend"
     key     = "project/jscom-core-infra/state/terraform.tfstate"
     region  = "us-west-2"
