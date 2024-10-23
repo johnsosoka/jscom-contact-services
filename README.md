@@ -1,43 +1,68 @@
-# jsocom-contact-services
-code & terraform to power contact-me forms on johnsosoka.com
+The README you provided is already quite detailed and provides a good overview of the project. However, adding an API Methods section with example JSON payloads would indeed be beneficial for users who want to interact with the API. Here's a revised version of the README with the suggested changes:
 
+---
 
-## Services Overview
+# JSCOM Contact Services
 
-### contact-listener
+This repository contains the source code for the JSCOM Contact Services, a serverless application that handles contact form submissions. The application is built using AWS services, including API Gateway, Lambda, DynamoDB, and SQS, and is managed using Terraform.
 
-This service receives contact messages via HTTP POST and sends them to `contact-message-queue` SQS queue.
+## Architecture
 
-### contact-filter
+The application consists of three AWS Lambda functions, an API Gateway, two DynamoDB tables, and two SQS queues.
 
-This service will read messages off of the `contact-message-queue` queue. 
+The architecture follows this flow:
 
-* If the IP/User Agent is blocked it will persist the `all-contact-messages` DynamooDB table with the flag "blocked=true"
-* If the IP/User Agent is not blocked it will forward messages to a `contact-notify-queue` SQS queue.
+1. Contact form submissions are sent to the API Gateway.
+2. The API Gateway triggers the `contact-listener` Lambda function.
+3. The `contact-listener` Lambda function validates the incoming message and forwards it to the `contact-message-queue`.
+4. The `contact-filter` Lambda function is triggered by the new message in the `contact-message-queue`. It checks if the sender is blocked. If not, the message is forwarded to the `contact-notify-queue`.
+5. The `contact-notifier` Lambda function is triggered by the new message in the `contact-notify-queue` and sends an email to the admin.
 
-### contact-notifier
+## Resources
 
-Reads messages from the `contact-notify` SQS queue and sends them to the configured email address.
+### Lambda Functions
 
-### contact-administration
+All Lambda functions are written in Python.
 
-(Not yet implemented)
+- `contact-listener`: This function receives contact form submissions from the API Gateway, performs simple validation, and forwards the messages to the `contact-message-queue`. [Source Code](https://github.com/johnsosoka/jscom-contact-services/blob/main/lambdas/src/contact_listener_lambda.py)
 
-Service provides several methods for contact administration
+- `contact-filter`: This function filters blocked contact messages from the `contact-message-queue`. It checks the `blocked_contacts` DynamoDB table to see if the sender is blocked. Valid messages are forwarded to the `contact-notify-queue`. [Source Code](https://github.com/johnsosoka/jscom-contact-services/blob/main/lambdas/src/contact_filter_lambda.py)
 
-* block contact
-* unblock contact
-* list blocked contacts
-* view all blocked messages
+- `contact-notifier`: This function receives messages from the `contact-notify-queue`, formats them, and sends them to the admin email. [Source Code](https://github.com/johnsosoka/jscom-contact-services/blob/main/lambdas/src/contact_notifier_lambda.py)
 
-## Resources Overview
+### DynamoDB Tables
 
-## contact-message-queue
+- `all-contact-messages`: This table stores all contact messages. It has the following attributes: `id`, `timestamp`, `sender_name`, `sender_email`, `message_body`, and `is_blocked`. It also has global secondary indexes on `sender_name`, `sender_email`, `is_blocked`, and `message_body`.
 
-Queue for all messages from contact forms. Messages are sent to this queue from the `contact-listener` service.
-These messages are then read by the `contact-filter` service, which determines if contact senders ip address is blocked.
+- `blocked_contacts`: This table tracks blocked contacts. It has the following attributes: `id`, `ip_address`, `user_agent`, and `is_blocked`. It also has global secondary indexes on `ip_address`, `user_agent`, `is_blocked`, and a composite index on `ip_address` and `user_agent`.
 
-## contact-notify-queue
+### SQS Queues
 
-Queue for all messages which are not blocked. Forwards messages to the `contact-notifier` service, which ultimately sends
-the message to the configured email address.
+- `contact-message-queue`: This queue holds messages received from the `contact-listener` Lambda function.
+
+- `contact-notify-queue`: This queue holds messages that have been filtered by the `contact-filter` Lambda function and are ready to be sent to the admin email by the `contact-notifier` Lambda function.
+
+## API Methods
+
+The API Gateway exposes the following endpoint:
+
+- `POST https://api.johnsosoka.com/v1/contact`: Submits a new contact form message. The request body should be a JSON object with the following structure:
+
+```json
+{
+  "sender_name": "John Doe",
+  "sender_email": "john.doe@example.com",
+  "message_body": "Hello, this is a test message."
+}
+```
+
+## Deployment
+
+The application is deployed using Terraform. The Terraform configuration files are located in the `terraform` directory. The Terraform state is managed remotely in an S3 bucket.
+
+To deploy the application, navigate to the `terraform` directory and run the following commands:
+
+```bash
+terraform init
+terraform apply
+```
