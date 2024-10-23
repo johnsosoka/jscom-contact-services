@@ -31,7 +31,7 @@ module "api_gateway" {
   # Custom domain
   create_api_domain_name      = true
   domain_name                 = "api.johnsosoka.com"
-  domain_name_certificate_arn = data.terraform_remote_state.jscom_common_data.outputs.jscom_acm_cert_global
+  domain_name_certificate_arn = data.terraform_remote_state.jscom_common_data.outputs.jscom_acm_cert
 
   # Access logs
   default_stage_access_log_destination_arn = aws_cloudwatch_log_group.api_gateway_log_group.arn
