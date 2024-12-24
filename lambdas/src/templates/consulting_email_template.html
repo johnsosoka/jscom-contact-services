@@ -1,0 +1,58 @@
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 100%;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: auto;
+            max-width: 600px;
+        }
+        .header {
+            background-color: #0073e6;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+        }
+        .content p {
+            margin: 10px 0;
+        }
+        .footer {
+            text-align: center;
+            padding: 10px 0;
+            color: #777;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>New Consulting Contact Message!</h1>
+        </div>
+        <div class="content">
+            <p><strong>Name:</strong> {{ contact_name }}</p>
+            <p><strong>Email:</strong> {{ contact_email }}</p>
+            <p><strong>Company:</strong> {{ company_name }}</p>
+            <p><strong>Industry:</strong> {{ industry }}</p>
+            <p><strong>Message:</strong> {{ contact_message }}</p>
+            <hr>
+            <p><strong>User Agent:</strong> {{ user_agent }}</p>
+            <p><strong>Source IP:</strong> {{ source_ip }}</p>
+        </div>
+        <div class="footer">
+            <p>John Has Been Consulted!</p>
+        </div>
+    </div>
+</body>
+</html>
