@@ -4,6 +4,8 @@ import os
 import logging
 import uuid
 import datetime
+from chain.contact_classification import contact_classification_chain
+from model.contact_classification import ContactClassification
 
 # Get resource IDs from environment variables
 blocked_contacts_table_name = os.environ['BLOCKED_CONTACTS_TABLE_NAME']
@@ -23,6 +25,10 @@ sqs = boto3.client('sqs')
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+def classify_message(message) -> ContactClassification:
+    classification: ContactClassification = contact_classification_chain.ainvoke({"message": message})
+    logger.info(f"Message classified as: {classification.contact_category} with confidence {classification.confidence_score}")
+    return classification
 
 def lambda_handler(event, context):
     # Loop through messages in SQS queue
@@ -60,6 +66,9 @@ def lambda_handler(event, context):
 
         timestamp = datetime.datetime.now()
 
+        # Classify the contact message
+        classification: ContactClassification = classify_message(contact_message)
+
         # Insert a message into all_contact_messages table
         item = {
             'id': str(uuid.uuid4()),
@@ -70,7 +79,10 @@ def lambda_handler(event, context):
             'user_agent': user_agent,
             'timestamp': int(timestamp.timestamp()),
             'is_blocked': int(is_blocked),
-            'contact_type': contact_type
+            'contact_type': contact_type,
+            'llm_classification_type': classification.contact_category,
+            'llm_classification_priority': classification.priority,
+            'llm_confidence_score': classification.confidence_score
         }
 
         if company_name:

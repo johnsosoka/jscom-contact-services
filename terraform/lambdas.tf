@@ -43,11 +43,12 @@ module "contact-filter" {
   function_name = var.contact_filter_lambda_name
   description   = "Filters SQS messages; writes DDB; forwards valid to notify queue."
   runtime       = "python3.13"
-  handler       = "contact_filter_lambda.lambda_handler"     # app/contact_filter_lambda.py
+  architectures = ["arm64"]
+  handler       = "app.contact_filter_lambda.lambda_handler"     # app/contact_filter_lambda.py
   build_in_docker = true
 
   source_path = [{
-    path             = "${path.module}/../lambdas/src/contact-filter/app"
+    path             = "${path.module}/../lambdas/src/contact-filter/"
     pip_requirements = "${path.module}/../lambdas/src/contact-filter/requirements.txt"
   }]
 
@@ -83,6 +84,7 @@ module "contact-filter" {
     ALL_CONTACT_MESSAGES_TABLE_NAME = aws_dynamodb_table.all_contact_messages.name
     CONTACT_NOTIFY_QUEUE_URL        = aws_sqs_queue.contact_notify_queue.id
     CONTACT_MESSAGE_QUEUE_URL       = aws_sqs_queue.contact_message_queue.id
+    OPENAI_API_KEY                  = var.openai_api_key
   }
 
   tags = {

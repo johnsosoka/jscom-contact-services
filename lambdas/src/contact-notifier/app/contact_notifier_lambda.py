@@ -28,6 +28,9 @@ def lambda_handler(event, context):
     company_name = message_body.get('company_name', 'N/A')
     industry = message_body.get('industry', 'N/A')
     contact_type = message_body.get('contact_type', 'standard')
+    llm_classification_type = message_body.get('llm_classification_type', 'N/A')
+    llm_classification_priority = message_body.get('llm_classification_priority', 'N/A')
+    llm_confidence_score = message_body.get('llm_confidence_score', 'N/A')
 
     # Create the HTML email template
     if contact_type == 'consulting':
@@ -101,7 +104,7 @@ def lambda_handler(event, context):
             source_ip=source_ip
         )
     else:
-        email_subject = 'New Contact Message.'
+        email_subject = f'New Contact Message. {llm_classification_type}'
         email_body = """
             <html>
             <head>

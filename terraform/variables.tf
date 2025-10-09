@@ -13,3 +13,9 @@ variable "contact_notifier_lambda_name" {
 variable "listener_api_name" {
   default = "contact-me-listener-api"
 }
+
+variable "openai_api_key" {
+  description = "OpenAI API key for the contact filter/classifier."
+  type        = string
+  sensitive   = true
+}
