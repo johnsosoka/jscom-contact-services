@@ -13,3 +13,22 @@ variable "contact_notifier_lambda_name" {
 variable "listener_api_name" {
   default = "contact-me-listener-api"
 }
+
+# Notification method configuration
+variable "email_notifications_enabled" {
+  description = "Enable email notifications via SES"
+  type        = string
+  default     = "true"
+}
+
+variable "email_sender" {
+  description = "Email address to send notifications from"
+  type        = string
+  default     = "mail@johnsosoka.com"
+}
+
+variable "email_recipient" {
+  description = "Email address to send notifications to"
+  type        = string
+  default     = "im@johnsosoka.com"
+}
