@@ -130,6 +130,9 @@ module "contact-notifier" {
 
   environment_variables = {
     CONTACT_NOTIFY_QUEUE = aws_sqs_queue.contact_notify_queue.id
+    EMAIL_ENABLED        = var.email_notifications_enabled
+    EMAIL_SENDER         = var.email_sender
+    EMAIL_RECIPIENT      = var.email_recipient
   }
   tags = {
     project = local.project_name
