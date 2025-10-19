@@ -19,6 +19,8 @@ from pydantic import ValidationError
 
 from models import (
     ApiResponse,
+    ContactMessage,
+    BlockedContact,
     MessageListResponse,
     StatsResponse,
     BlockContactRequest,
@@ -64,7 +66,7 @@ def handle_list_messages() -> dict[str, Any]:
         )
 
         # Get messages
-        result = list_messages(
+        result: MessageListResponse = list_messages(
             limit=query_params.limit,
             next_token=query_params.next_token,
             contact_type=query_params.contact_type,
@@ -116,7 +118,7 @@ def handle_get_message(message_id: str) -> dict[str, Any]:
         500: Internal server error
     """
     try:
-        message = get_message_by_id(message_id)
+        message: ContactMessage | None = get_message_by_id(message_id)
 
         if message is None:
             response = ApiResponse[None](
@@ -151,7 +153,7 @@ def handle_get_stats() -> dict[str, Any]:
         500: Internal server error
     """
     try:
-        stats = get_stats()
+        stats: StatsResponse = get_stats()
 
         response = ApiResponse[StatsResponse](
             status=200,
@@ -179,7 +181,7 @@ def handle_list_blocked() -> dict[str, Any]:
         500: Internal server error
     """
     try:
-        result = list_blocked_contacts()
+        result: BlockedContactListResponse = list_blocked_contacts()
 
         response = ApiResponse[BlockedContactListResponse](
             status=200,
@@ -215,11 +217,11 @@ def handle_block_contact() -> dict[str, Any]:
     """
     try:
         # Parse request body
-        body = app.current_event.json_body
-        request = BlockContactRequest(**body)
+        body: dict[str, Any] = app.current_event.json_body
+        request: BlockContactRequest = BlockContactRequest(**body)
 
         # Block the contact
-        blocked = block_contact(request)
+        blocked: BlockedContact = block_contact(request)
 
         response = ApiResponse[BlockedContactResponse](
             status=201,
@@ -270,7 +272,7 @@ def handle_unblock_contact(blocked_id: str) -> dict[str, Any]:
         500: Internal server error
     """
     try:
-        success = unblock_contact(blocked_id)
+        success: bool = unblock_contact(blocked_id)
 
         if not success:
             response = ApiResponse[None](
