@@ -1,0 +1,18 @@
+:briefcase: **New Consulting Inquiry**
+
+:bust_in_silhouette: **Name:** {{ contact_name }}
+:email: **Email:** {{ contact_email }}
+:office: **Company:** {{ company_name }}
+:chart_with_upwards_trend: **Industry:** {{ industry }}
+
+:speech_balloon: **Message:**
+```
+{{ contact_message }}
+```
+
+───────────────────────────────
+:mag: ***Request Metadata***
+***User Agent:*** `{{ user_agent }}`
+***Source IP:*** `{{ source_ip }}`
+
+:clock3: {{ timestamp }}

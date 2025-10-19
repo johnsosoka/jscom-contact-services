@@ -1,0 +1,16 @@
+:envelope_with_arrow: **New Contact Message**
+
+:bust_in_silhouette: **Name:** {{ contact_name }}
+:email: **Email:** {{ contact_email }}
+
+:speech_balloon: **Message:**
+```
+{{ contact_message }}
+```
+
+───────────────────────────────
+:mag: ***Request Metadata***
+***User Agent:*** `{{ user_agent }}`
+***Source IP:*** `{{ source_ip }}`
+
+:clock3: {{ timestamp }}
