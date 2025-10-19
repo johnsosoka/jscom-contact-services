@@ -6,6 +6,10 @@ import json
 import logging
 import requests
 from typing import Dict, Any
+from pathlib import Path
+from datetime import datetime
+from zoneinfo import ZoneInfo
+from jinja2 import Environment, FileSystemLoader
 from .base import NotificationMethod
 
 logger = logging.getLogger()
@@ -17,9 +21,13 @@ class DiscordNotificationMethod(NotificationMethod):
     """
 
     def __init__(self):
-        """Initialize the Discord notification method with webhook URL."""
+        """Initialize the Discord notification method with webhook URL and Jinja2 environment."""
         self.webhook_url = os.environ.get('DISCORD_WEBHOOK_URL', '')
         self.enabled = os.environ.get('DISCORD_ENABLED', 'false').lower() == 'true'
+
+        # Set up Jinja2 template environment
+        template_dir = Path(__file__).parent.parent / 'templates' / 'discord'
+        self.jinja_env = Environment(loader=FileSystemLoader(str(template_dir)))
 
     def is_enabled(self) -> bool:
         """Check if Discord notifications are enabled via environment variable."""
@@ -118,41 +126,41 @@ class DiscordNotificationMethod(NotificationMethod):
         response.raise_for_status()
         return response.status_code
 
+    def _get_mountain_timestamp(self) -> str:
+        """Get current timestamp formatted in Mountain Time."""
+        mountain_tz = ZoneInfo('America/Denver')
+        now = datetime.now(mountain_tz)
+        return now.strftime('%B %d, %Y at %I:%M %p MT')
+
     def _format_standard_message(self, contact_name: str, contact_email: str,
                                   contact_message: str, user_agent: str,
                                   source_ip: str) -> str:
-        """Format standard contact message for Discord."""
-        message = f"""**New Contact Message!**
-
-**Name:** {contact_name}
-**Email:** {contact_email}
-**Message:**
-{contact_message}
-
----
-**User Agent:** {user_agent}
-**Source IP:** {source_ip}
-
-John Has Been Contacted."""
+        """Format standard contact message for Discord using Jinja2 template."""
+        template = self.jinja_env.get_template('standard_discord_message.txt')
+        message = template.render(
+            contact_name=contact_name,
+            contact_email=contact_email,
+            contact_message=contact_message,
+            user_agent=user_agent,
+            source_ip=source_ip,
+            timestamp=self._get_mountain_timestamp()
+        )
         return message
 
     def _format_consulting_message(self, contact_name: str, contact_email: str,
                                     contact_message: str, user_agent: str,
                                     source_ip: str, company_name: str,
                                     industry: str) -> str:
-        """Format consulting contact message for Discord."""
-        message = f"""**New Consulting Contact Message!**
-
-**Name:** {contact_name}
-**Email:** {contact_email}
-**Company:** {company_name}
-**Industry:** {industry}
-**Message:**
-{contact_message}
-
----
-**User Agent:** {user_agent}
-**Source IP:** {source_ip}
-
-John Has Been Consulted!"""
+        """Format consulting contact message for Discord using Jinja2 template."""
+        template = self.jinja_env.get_template('consulting_discord_message.txt')
+        message = template.render(
+            contact_name=contact_name,
+            contact_email=contact_email,
+            company_name=company_name,
+            industry=industry,
+            contact_message=contact_message,
+            user_agent=user_agent,
+            source_ip=source_ip,
+            timestamp=self._get_mountain_timestamp()
+        )
         return message
