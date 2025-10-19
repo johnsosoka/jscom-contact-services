@@ -1,0 +1,23 @@
+# Example Terraform variables file
+# Copy this file to terraform.tfvars and fill in the sensitive values
+
+# Admin API Key - Generate a secure random key
+# Example: openssl rand -hex 32
+admin_api_key_value = "your-secure-api-key-here"
+
+# Discord webhook URL (optional)
+discord_webhook_url = "https://discord.com/api/webhooks/your-webhook-url"
+
+# Email notification settings (optional overrides)
+# email_notifications_enabled = "true"
+# email_sender = "mail@johnsosoka.com"
+# email_recipient = "im@johnsosoka.com"
+
+# Discord notification settings (optional overrides)
+# discord_notifications_enabled = "true"
+
+# Lambda function names (optional overrides)
+# contact_listener_lambda_name = "contact-listener"
+# contact_filter_lambda_name = "contact-filter"
+# contact_notifier_lambda_name = "contact-notifier"
+# contact_admin_lambda_name = "contact-admin"
