@@ -7,64 +7,282 @@
 	},
 	"item": [
 		{
-			"name": "Contact Message (Standard)",
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"contact_email\": \"john@sosoka.com\",\n    \"contact_message\": \"Standard contact message from Postman\",\n    \"contact_name\": \"JR Sosoka\",\n    \"consulting_contact\": false\n  }",
-					"options": {
-						"raw": {
-							"language": "json"
+			"name": "Public Endpoints",
+			"item": [
+				{
+					"name": "Contact Message (Standard)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"contact_email\": \"john@sosoka.com\",\n    \"contact_message\": \"Standard contact message from Postman\",\n    \"contact_name\": \"JR Sosoka\",\n    \"consulting_contact\": false\n  }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.johnsosoka.com/v1/contact",
+							"protocol": "https",
+							"host": [
+								"api",
+								"johnsosoka",
+								"com"
+							],
+							"path": [
+								"v1",
+								"contact"
+							]
 						}
-					}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "https://api.johnsosoka.com/v1/contact",
-					"protocol": "https",
-					"host": [
-						"api",
-						"johnsosoka",
-						"com"
-					],
-					"path": [
-						"v1",
-						"contact"
-					]
+				{
+					"name": "Contact Message (Consulting)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"contact_email\": \"john@sosoka.com\",\n    \"contact_message\": \"Consulting contact message from Postman\",\n    \"contact_name\": \"JR Sosoka\",\n    \"company_name\": \"JS Consulting\",\n    \"industry\": \"Tech\",\n    \"consulting_contact\": true\n  }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.johnsosoka.com/v1/contact",
+							"protocol": "https",
+							"host": [
+								"api",
+								"johnsosoka",
+								"com"
+							],
+							"path": [
+								"v1",
+								"contact"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "Contact Message (Consulting)",
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"contact_email\": \"john@sosoka.com\",\n    \"contact_message\": \"Consulting contact message from Postman\",\n    \"contact_name\": \"JR Sosoka\",\n    \"company_name\": \"JS Consulting\",\n    \"industry\": \"Tech\",\n    \"consulting_contact\": true\n  }",
-					"options": {
-						"raw": {
-							"language": "json"
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Get System Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://api.johnsosoka.com/admin/stats",
+							"protocol": "https",
+							"host": [
+								"api",
+								"johnsosoka",
+								"com"
+							],
+							"path": [
+								"admin",
+								"stats"
+							]
 						}
-					}
+					},
+					"response": []
 				},
-				"url": {
-					"raw": "https://api.johnsosoka.com/v1/contact",
-					"protocol": "https",
-					"host": [
-						"api",
-						"johnsosoka",
-						"com"
-					],
-					"path": [
-						"v1",
-						"contact"
-					]
+				{
+					"name": "List Contact Messages",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://api.johnsosoka.com/admin/messages?limit=20",
+							"protocol": "https",
+							"host": [
+								"api",
+								"johnsosoka",
+								"com"
+							],
+							"path": [
+								"admin",
+								"messages"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "next_token",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "contact_type",
+									"value": "standard",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Message",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://api.johnsosoka.com/admin/messages/:message_id",
+							"protocol": "https",
+							"host": [
+								"api",
+								"johnsosoka",
+								"com"
+							],
+							"path": [
+								"admin",
+								"messages",
+								":message_id"
+							],
+							"variable": [
+								{
+									"key": "message_id",
+									"value": "your-message-id-here"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Blocked Contacts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://api.johnsosoka.com/admin/blocked",
+							"protocol": "https",
+							"host": [
+								"api",
+								"johnsosoka",
+								"com"
+							],
+							"path": [
+								"admin",
+								"blocked"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Block Contact",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"ip_address\": \"192.168.1.100\",\n    \"user_agent\": \"BadBot/1.0\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.johnsosoka.com/admin/blocked",
+							"protocol": "https",
+							"host": [
+								"api",
+								"johnsosoka",
+								"com"
+							],
+							"path": [
+								"admin",
+								"blocked"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unblock Contact",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-api-key",
+								"value": "{{admin_api_key}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://api.johnsosoka.com/admin/blocked/:contact_id",
+							"protocol": "https",
+							"host": [
+								"api",
+								"johnsosoka",
+								"com"
+							],
+							"path": [
+								"admin",
+								"blocked",
+								":contact_id"
+							],
+							"variable": [
+								{
+									"key": "contact_id",
+									"value": "your-contact-id-here"
+								}
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "admin_api_key",
+			"value": "your-api-key-here",
+			"type": "string"
 		}
 	]
 }

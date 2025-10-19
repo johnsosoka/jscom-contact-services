@@ -10,6 +10,9 @@ __pycache__/
 terraform/.terraform*
 terraform/builds/
 
+# Terraform variable files with secrets
+terraform/*.tfvars
+!terraform/*.tfvars.example
 
 # Distribution / packaging
 .Python

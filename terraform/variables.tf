@@ -10,8 +10,21 @@ variable "contact_notifier_lambda_name" {
   default = "contact-notifier"
 }
 
+variable "contact_admin_lambda_name" {
+  description = "Name for the admin Lambda function"
+  type        = string
+  default     = "contact-admin"
+}
+
 variable "listener_api_name" {
   default = "contact-me-listener-api"
+}
+
+# Admin API Key Configuration
+variable "admin_api_key_value" {
+  description = "API key value for admin endpoints (store securely)"
+  type        = string
+  sensitive   = true
 }
 
 # Notification method configuration
