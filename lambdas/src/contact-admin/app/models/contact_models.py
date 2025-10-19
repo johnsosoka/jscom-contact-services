@@ -41,21 +41,6 @@ class ContactMessage(BaseModel):
     company_name: str | None = Field(default=None, description="Company name (consulting only)")
     industry: str | None = Field(default=None, description="Industry (consulting only)")
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "id": "550e8400-e29b-41d4-a716-446655440000",
-                "contact_email": "john@example.com",
-                "contact_message": "Interested in your services",
-                "contact_name": "John Doe",
-                "ip_address": "192.168.1.1",
-                "user_agent": "Mozilla/5.0...",
-                "timestamp": 1697840000,
-                "is_blocked": 0,
-                "contact_type": "standard"
-            }
-        }
-
 
 class BlockedContact(BaseModel):
     """
@@ -72,13 +57,3 @@ class BlockedContact(BaseModel):
     ip_address: str = Field(description="Blocked IP address")
     user_agent: str = Field(description="Associated user agent")
     is_blocked: int = Field(description="Block status (0 or 1)")
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "id": "660e8400-e29b-41d4-a716-446655440001",
-                "ip_address": "192.168.1.100",
-                "user_agent": "BadBot/1.0",
-                "is_blocked": 1
-            }
-        }

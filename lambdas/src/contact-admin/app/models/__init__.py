@@ -1,4 +1,4 @@
-from models.domain_models import ContactMessage, BlockedContact
+from models.contact_models import ContactMessage, BlockedContact
 from models.request_models import BlockContactRequest, MessageQueryParams
 from models.response_models import (
     ApiResponse,
