@@ -2,7 +2,7 @@ import json
 import boto3
 import os
 import logging
-from notification_methods import EmailNotificationMethod
+from notification_methods import EmailNotificationMethod, DiscordNotificationMethod
 
 # Configure logging
 logger = logging.getLogger()
@@ -14,9 +14,7 @@ queue_url = os.environ['CONTACT_NOTIFY_QUEUE']
 # Initialize notification methods
 NOTIFICATION_METHODS = [
     EmailNotificationMethod(),
-    # Future methods can be added here:
-    # DiscordNotificationMethod(),
-    # SlackNotificationMethod(),
+    DiscordNotificationMethod(),
 ]
 
 

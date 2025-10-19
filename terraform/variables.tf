@@ -32,3 +32,15 @@ variable "email_recipient" {
   type        = string
   default     = "im@johnsosoka.com"
 }
+
+variable "discord_notifications_enabled" {
+  description = "Enable Discord webhook notifications"
+  type        = string
+  default     = "true"
+}
+
+variable "discord_webhook_url" {
+  description = "Discord webhook URL for notifications"
+  type        = string
+  sensitive   = true
+}
