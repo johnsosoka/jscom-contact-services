@@ -50,15 +50,18 @@ resource "aws_lambda_permission" "lambda_permission" {
 ################################
 
 # Lambda authorizer function for API key validation
-module "admin-authorizer" {
+module "contact-admin-authorizer" {
   source          = "terraform-aws-modules/lambda/aws"
-  function_name   = "${var.contact_admin_lambda_name}-authorizer"
+  function_name   = "contact-admin-authorizer"
   description     = "Lambda authorizer for admin API key validation"
   runtime         = "python3.13"
-  handler         = "index.lambda_handler"
+  handler         = "contact_admin_authorizer_lambda.lambda_handler"
   build_in_docker = false
 
-  source_path = "${path.module}/authorizer"
+  source_path = [{
+    path             = "${path.module}/../lambdas/src/contact-admin-authorizer/app"
+    pip_requirements = false
+  }]
 
   environment_variables = {
     ADMIN_API_KEY = var.admin_api_key_value
@@ -74,7 +77,7 @@ resource "aws_apigatewayv2_authorizer" "api_key_authorizer" {
   api_id          = local.api_gateway_id
   authorizer_type = "REQUEST"
   name            = "${local.project_name}-admin-authorizer"
-  authorizer_uri  = module.admin-authorizer.lambda_function_invoke_arn
+  authorizer_uri  = module.contact-admin-authorizer.lambda_function_invoke_arn
 
   authorizer_payload_format_version = "2.0"
   enable_simple_responses           = true
@@ -86,7 +89,7 @@ resource "aws_apigatewayv2_authorizer" "api_key_authorizer" {
 resource "aws_lambda_permission" "authorizer_permission" {
   statement_id  = "AllowAPIGatewayInvokeAuthorizer"
   action        = "lambda:InvokeFunction"
-  function_name = module.admin-authorizer.lambda_function_name
+  function_name = module.contact-admin-authorizer.lambda_function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${local.execution_arn}/authorizers/${aws_apigatewayv2_authorizer.api_key_authorizer.id}"
 }
