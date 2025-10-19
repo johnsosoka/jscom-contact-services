@@ -34,16 +34,29 @@ lambdas/
   src/
     contact-listener/
       app/contact_listener_lambda.py
-      requirements.txt (currently empty)
+      test/                    # Unit tests for contact-listener
+      requirements.txt
+      .venv/                   # Virtual environment for local development
     contact-filter/
       app/contact_filter_lambda.py
+      test/                    # Unit tests for contact-filter
       requirements.txt
+      .venv/                   # Virtual environment for local development
     contact-notifier/
       app/contact_notifier_lambda.py
+      test/                    # Unit tests for contact-notifier
       requirements.txt
-  test/
-    test_contact_listener.py
-    test_contact_notifier_lambda.py
+      .venv/                   # Virtual environment for local development
+    contact-admin/
+      app/contact_admin_lambda.py
+      test/                    # Unit tests for contact-admin
+      requirements.txt
+      .venv/                   # Virtual environment for local development
+    contact-admin-authorizer/
+      app/contact_admin_authorizer_lambda.py
+      test/                    # Unit tests for contact-admin-authorizer
+      requirements.txt
+      .venv/                   # Virtual environment for local development
 
 terraform/
   main.tf              # Provider, backend, remote state references
@@ -52,16 +65,24 @@ terraform/
   dynamoDB.tf          # DynamoDB tables
   sqs.tf               # SQS queues
   variables.tf         # Terraform variables
+  terraform.tfvars     # Sensitive configuration (not in version control)
+
+test/
+  prod_test_report.md  # Production regression test results
 ```
+
+**Note:** Each Lambda function has its own `test/` directory within its module for unit tests, allowing independent test dependencies and virtual environments per function.
 
 ### Python Development Environment
 
-Each Lambda function has its own isolated virtual environment for local development:
+Each Lambda function has its own isolated virtual environment for local development and testing:
 
 **Virtual Environment Locations:**
-- `lambdas/src/contact-listener/.venv/` (currently minimal dependencies)
+- `lambdas/src/contact-listener/.venv/`
 - `lambdas/src/contact-filter/.venv/`
 - `lambdas/src/contact-notifier/.venv/`
+- `lambdas/src/contact-admin/.venv/`
+- `lambdas/src/contact-admin-authorizer/.venv/`
 
 **Activating a Virtual Environment:**
 ```bash
@@ -79,20 +100,32 @@ source src/contact-notifier/.venv/bin/activate
 pip install -r requirements.txt
 
 # For development/testing dependencies:
-pip install pytest
+pip install pytest moto boto3
 ```
 
-**Running Tests with Virtual Environment:**
+**Running Tests:**
+Each Lambda function has its own `test/` directory within its module for unit tests. This allows each function to have independent test dependencies and virtual environments.
+
 ```bash
-# From the Lambda function directory
+# Run tests for a specific Lambda function
 cd lambdas/src/contact-notifier
 source .venv/bin/activate
-python -m pytest ../../test/test_contact_notifier_lambda.py -v
-python -m pytest ../../test/test_discord_method.py -v
+python -m pytest test/ -v
+
+# Or run a specific test file
+python -m pytest test/test_notifier.py -v
 ```
+
+**Test Structure:**
+- `lambdas/src/contact-listener/test/` - Unit tests for contact-listener
+- `lambdas/src/contact-filter/test/` - Unit tests for contact-filter
+- `lambdas/src/contact-notifier/test/` - Unit tests for contact-notifier
+- `lambdas/src/contact-admin/test/` - Unit tests for contact-admin
+- `lambdas/src/contact-admin-authorizer/test/` - Unit tests for contact-admin-authorizer
 
 **Important Notes:**
 - Each Lambda has isolated dependencies defined in its own `requirements.txt`
+- Each Lambda has its own test directory with independent test dependencies
 - Virtual environments are for local development/testing only
 - Lambda deployment packages are built by Terraform using Docker (`build_in_docker = true`)
 - When running Terraform commands, ensure `AWS_PROFILE=jscom` is set
@@ -146,15 +179,30 @@ terraform apply
 
 ### Testing Lambda Functions
 
-Tests use pytest with mocking. Run from `lambdas/` directory:
+Each Lambda function has its own test directory with independent test dependencies and virtual environments. Tests use pytest with mocking.
 
 ```bash
+# Run tests for a specific Lambda function
+cd lambdas/src/contact-notifier
+source .venv/bin/activate
+python -m pytest test/ -v
+
+# Run all tests for all Lambda functions (from lambdas directory)
 cd lambdas
-pytest test/test_contact_listener.py
-pytest test/test_contact_notifier_lambda.py
+for dir in src/*/; do
+  if [ -d "${dir}test" ] && [ -d "${dir}.venv" ]; then
+    echo "Testing ${dir}..."
+    (cd "$dir" && source .venv/bin/activate && python -m pytest test/ -v)
+  fi
+done
 ```
 
-Individual Lambda functions have isolated virtual environments in their directories (e.g., `lambdas/src/contact-filter/.venv/`).
+**Test Locations:**
+- `lambdas/src/contact-listener/test/` - contact-listener unit tests
+- `lambdas/src/contact-filter/test/` - contact-filter unit tests
+- `lambdas/src/contact-notifier/test/` - contact-notifier unit tests
+- `lambdas/src/contact-admin/test/` - contact-admin unit tests
+- `lambdas/src/contact-admin-authorizer/test/` - contact-admin-authorizer unit tests
 
 ### Lambda Deployment
 
