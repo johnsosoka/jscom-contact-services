@@ -1,3 +1,9 @@
+---
+allowed-tools:
+  - Bash(curl:*)
+description: Send an HTTP request
+---
+
 Perform a regression test against the production endpoints.
 
 If a specific endpoint is provided as an argument, test only that endpoint. Otherwise, perform a complete regression test of all endpoints.
