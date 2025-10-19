@@ -133,6 +133,8 @@ module "contact-notifier" {
     EMAIL_ENABLED        = var.email_notifications_enabled
     EMAIL_SENDER         = var.email_sender
     EMAIL_RECIPIENT      = var.email_recipient
+    DISCORD_ENABLED      = var.discord_notifications_enabled
+    DISCORD_WEBHOOK_URL  = var.discord_webhook_url
   }
   tags = {
     project = local.project_name
