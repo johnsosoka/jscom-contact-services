@@ -106,10 +106,10 @@ resource "aws_apigatewayv2_integration" "admin_integration" {
   payload_format_version = "2.0"
 }
 
-# Catch-all route for admin endpoints: ANY /admin/{proxy+}
+# Catch-all route for admin endpoints: ANY /v1/contact/admin/{proxy+}
 resource "aws_apigatewayv2_route" "admin_route" {
   api_id    = local.api_gateway_id
-  route_key = "ANY /admin/{proxy+}"
+  route_key = "ANY /v1/contact/admin/{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.admin_integration.id}"
 
   authorization_type = "CUSTOM"

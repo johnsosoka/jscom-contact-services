@@ -40,7 +40,7 @@ logger = Logger()
 app = APIGatewayHttpResolver()
 
 
-@app.get("/admin/messages")
+@app.get("/v1/contact/admin/messages")
 def handle_list_messages() -> dict[str, Any]:
     """
     List contact messages with pagination.
@@ -102,7 +102,7 @@ def handle_list_messages() -> dict[str, Any]:
         return response.model_dump()
 
 
-@app.get("/admin/messages/<message_id>")
+@app.get("/v1/contact/admin/messages/<message_id>")
 def handle_get_message(message_id: str) -> dict[str, Any]:
     """
     Retrieve a specific contact message by ID.
@@ -141,7 +141,7 @@ def handle_get_message(message_id: str) -> dict[str, Any]:
         return response.model_dump()
 
 
-@app.get("/admin/stats")
+@app.get("/v1/contact/admin/stats")
 def handle_get_stats() -> dict[str, Any]:
     """
     Get system statistics and analytics.
@@ -169,7 +169,7 @@ def handle_get_stats() -> dict[str, Any]:
         return response.model_dump()
 
 
-@app.get("/admin/blocked")
+@app.get("/v1/contact/admin/blocked")
 def handle_list_blocked() -> dict[str, Any]:
     """
     List all blocked contacts.
@@ -197,7 +197,7 @@ def handle_list_blocked() -> dict[str, Any]:
         return response.model_dump()
 
 
-@app.post("/admin/blocked")
+@app.post("/v1/contact/admin/blocked")
 def handle_block_contact() -> dict[str, Any]:
     """
     Add an IP address to the blocked list.
@@ -256,7 +256,7 @@ def handle_block_contact() -> dict[str, Any]:
         return response.model_dump()
 
 
-@app.delete("/admin/blocked/<blocked_id>")
+@app.delete("/v1/contact/admin/blocked/<blocked_id>")
 def handle_unblock_contact(blocked_id: str) -> dict[str, Any]:
     """
     Remove an IP address from the blocked list.
