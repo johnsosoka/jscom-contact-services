@@ -5,6 +5,8 @@ import os
 import boto3
 import logging
 from typing import Dict, Any
+from pathlib import Path
+from jinja2 import Environment, FileSystemLoader
 from .base import NotificationMethod
 
 logger = logging.getLogger()
@@ -16,11 +18,15 @@ class EmailNotificationMethod(NotificationMethod):
     """
 
     def __init__(self):
-        """Initialize the email notification method with SES client."""
+        """Initialize the email notification method with SES client and Jinja2 environment."""
         self.ses = boto3.client('ses')
         self.sender = os.environ.get('EMAIL_SENDER', 'mail@johnsosoka.com')
         self.recipient = os.environ.get('EMAIL_RECIPIENT', 'im@johnsosoka.com')
         self.enabled = os.environ.get('EMAIL_ENABLED', 'true').lower() == 'true'
+
+        # Set up Jinja2 template environment
+        template_dir = Path(__file__).parent.parent / 'templates'
+        self.jinja_env = Environment(loader=FileSystemLoader(str(template_dir)))
 
     def is_enabled(self) -> bool:
         """Check if email notifications are enabled via environment variable."""
@@ -95,140 +101,29 @@ class EmailNotificationMethod(NotificationMethod):
     def _generate_standard_email(self, contact_name: str, contact_email: str,
                                  contact_message: str, user_agent: str,
                                  source_ip: str) -> tuple[str, str]:
-        """Generate standard contact email template."""
+        """Generate standard contact email from Jinja2 template."""
         email_subject = 'New Contact Message.'
-        email_body = """
-            <html>
-            <head>
-                <style>
-                    body {{
-                        font-family: Arial, sans-serif;
-                        margin: 0;
-                        padding: 0;
-                        background-color: #f4f4f4;
-                    }}
-                    .container {{
-                        width: 100%;
-                        padding: 20px;
-                        background-color: #ffffff;
-                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                        margin: auto;
-                        max-width: 600px;
-                    }}
-                    .header {{
-                        background-color: #0073e6;
-                        color: white;
-                        padding: 10px 0;
-                        text-align: center;
-                    }}
-                    .content {{
-                        padding: 20px;
-                    }}
-                    .content p {{
-                        margin: 10px 0;
-                    }}
-                    .footer {{
-                        text-align: center;
-                        padding: 10px 0;
-                        color: #777;
-                        font-size: 12px;
-                    }}
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="header">
-                        <h1>New Contact Message!</h1>
-                    </div>
-                    <div class="content">
-                        <p><strong>Name:</strong> {contact_name}</p>
-                        <p><strong>Email:</strong> {contact_email}</p>
-                        <p><strong>Message:</strong> {contact_message}</p>
-                        <hr>
-                        <p><strong>User Agent:</strong> {user_agent}</p>
-                        <p><strong>Source IP:</strong> {source_ip}</p>
-                    </div>
-                    <div class="footer">
-                        <p>John Has Been Contacted.</p>
-                    </div>
-                </div>
-            </body>
-            </html>
-        """.format(
+
+        template = self.jinja_env.get_template('standard_email_template.html')
+        email_body = template.render(
             contact_name=contact_name,
             contact_email=contact_email,
             contact_message=contact_message,
             user_agent=user_agent,
             source_ip=source_ip
         )
+
         return email_subject, email_body
 
     def _generate_consulting_email(self, contact_name: str, contact_email: str,
                                    contact_message: str, user_agent: str,
                                    source_ip: str, company_name: str,
                                    industry: str) -> tuple[str, str]:
-        """Generate consulting contact email template."""
+        """Generate consulting contact email from Jinja2 template."""
         email_subject = 'New Consulting Contact Message!'
-        email_body = """
-            <html>
-            <head>
-                <style>
-                    body {{
-                        font-family: Arial, sans-serif;
-                        margin: 0;
-                        padding: 0;
-                        background-color: #f4f4f4;
-                    }}
-                    .container {{
-                        width: 100%;
-                        padding: 20px;
-                        background-color: #ffffff;
-                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                        margin: auto;
-                        max-width: 600px;
-                    }}
-                    .header {{
-                        background-color: #0073e6;
-                        color: white;
-                        padding: 10px 0;
-                        text-align: center;
-                    }}
-                    .content {{
-                        padding: 20px;
-                    }}
-                    .content p {{
-                        margin: 10px 0;
-                    }}
-                    .footer {{
-                        text-align: center;
-                        padding: 10px 0;
-                        color: #777;
-                        font-size: 12px;
-                    }}
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <div class="header">
-                        <h1>New Consulting Contact Message!</h1>
-                    </div>
-                    <div class="content">
-                        <p><strong>Name:</strong> {contact_name}</p>
-                        <p><strong>Email:</strong> {contact_email}</p>
-                        <p><strong>Company:</strong> {company_name}</p>
-                        <p><strong>Industry:</strong> {industry}</p>
-                        <p><strong>Message:</strong> {contact_message}</p>
-                        <hr>
-                        <p><strong>User Agent:</strong> {user_agent}</p>
-                        <p><strong>Source IP:</strong> {source_ip}</p>
-                    </div>
-                    <div class="footer">
-                        <p>John Has Been Consulted!</p>
-                    </div>
-                </div>
-            </body>
-            </html>
-        """.format(
+
+        template = self.jinja_env.get_template('consulting_email_template.html')
+        email_body = template.render(
             contact_name=contact_name,
             contact_email=contact_email,
             company_name=company_name,
@@ -237,4 +132,5 @@ class EmailNotificationMethod(NotificationMethod):
             user_agent=user_agent,
             source_ip=source_ip
         )
+
         return email_subject, email_body
