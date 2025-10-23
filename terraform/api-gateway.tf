@@ -51,7 +51,7 @@ resource "aws_lambda_permission" "lambda_permission" {
 
 # Use shared lambda-authorizer module from jscom-tf-modules
 module "contact-admin-authorizer" {
-  source = "git::https://github.com/johnsosoka/jscom-tf-modules.git//modules/lambda-authorizer?ref=feature/lambda-authorizer-module"
+  source = "git::https://github.com/johnsosoka/jscom-tf-modules.git//modules/lambda-authorizer?ref=main"
 
   function_name              = "contact-admin-authorizer"
   api_gateway_id             = local.api_gateway_id
