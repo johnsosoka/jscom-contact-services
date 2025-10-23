@@ -49,49 +49,15 @@ resource "aws_lambda_permission" "lambda_permission" {
 # Admin Lambda Authorizer
 ################################
 
-# Lambda authorizer function for API key validation
+# Use shared lambda-authorizer module from jscom-tf-modules
 module "contact-admin-authorizer" {
-  source          = "terraform-aws-modules/lambda/aws"
-  function_name   = "contact-admin-authorizer"
-  description     = "Lambda authorizer for admin API key validation"
-  runtime         = "python3.13"
-  handler         = "contact_admin_authorizer_lambda.lambda_handler"
-  build_in_docker = false
+  source = "git::https://github.com/johnsosoka/jscom-tf-modules.git//modules/lambda-authorizer?ref=feature/lambda-authorizer-module"
 
-  source_path = [{
-    path             = "${path.module}/../lambdas/src/contact-admin-authorizer/app"
-    pip_requirements = false
-  }]
-
-  environment_variables = {
-    ADMIN_API_KEY = var.admin_api_key_value
-  }
-
-  tags = {
-    project = local.project_name
-  }
-}
-
-# API Gateway v2 authorizer using Lambda
-resource "aws_apigatewayv2_authorizer" "api_key_authorizer" {
-  api_id          = local.api_gateway_id
-  authorizer_type = "REQUEST"
-  name            = "${local.project_name}-admin-authorizer"
-  authorizer_uri  = module.contact-admin-authorizer.lambda_function_invoke_arn
-
-  authorizer_payload_format_version = "2.0"
-  enable_simple_responses           = true
-
-  identity_sources = ["$request.header.x-api-key"]
-}
-
-# Permission for API Gateway to invoke the authorizer Lambda
-resource "aws_lambda_permission" "authorizer_permission" {
-  statement_id  = "AllowAPIGatewayInvokeAuthorizer"
-  action        = "lambda:InvokeFunction"
-  function_name = module.contact-admin-authorizer.lambda_function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${local.execution_arn}/authorizers/${aws_apigatewayv2_authorizer.api_key_authorizer.id}"
+  function_name              = "contact-admin-authorizer"
+  api_gateway_id             = local.api_gateway_id
+  api_gateway_execution_arn  = local.execution_arn
+  admin_api_key_value        = var.admin_api_key_value
+  project_name               = local.project_name
 }
 
 ################################
@@ -113,7 +79,7 @@ resource "aws_apigatewayv2_route" "admin_route" {
   target    = "integrations/${aws_apigatewayv2_integration.admin_integration.id}"
 
   authorization_type = "CUSTOM"
-  authorizer_id      = aws_apigatewayv2_authorizer.api_key_authorizer.id
+  authorizer_id      = module.contact-admin-authorizer.authorizer_id
 }
 
 # Lambda permission for API Gateway to invoke admin Lambda
