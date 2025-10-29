@@ -20,13 +20,6 @@ variable "listener_api_name" {
   default = "contact-me-listener-api"
 }
 
-# Admin API Key Configuration
-variable "admin_api_key_value" {
-  description = "API key value for admin endpoints (store securely)"
-  type        = string
-  sensitive   = true
-}
-
 # Notification method configuration
 variable "email_notifications_enabled" {
   description = "Enable email notifications via SES"

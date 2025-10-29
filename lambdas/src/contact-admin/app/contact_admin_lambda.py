@@ -8,12 +8,19 @@ retrieving system statistics.
 Environment Variables:
     ALL_CONTACT_MESSAGES_TABLE_NAME: DynamoDB table for contact messages
     BLOCKED_CONTACTS_TABLE_NAME: DynamoDB table for blocked contacts
+    COGNITO_USER_POOL_ID: Cognito User Pool ID for JWT validation
+    COGNITO_REGION: AWS region for Cognito (default: us-west-2)
+    COGNITO_APP_CLIENT_ID: Cognito App Client ID for JWT validation
 """
 
 import json
+import os
 from typing import Any
+import requests
+from jose import jwt, JWTError
 from aws_lambda_powertools import Logger
-from aws_lambda_powertools.event_handler import APIGatewayHttpResolver
+from aws_lambda_powertools.event_handler import APIGatewayHttpResolver, CORSConfig
+from aws_lambda_powertools.event_handler.exceptions import UnauthorizedError
 from aws_lambda_powertools.logging import correlation_paths
 from pydantic import ValidationError
 
@@ -39,7 +46,102 @@ from handlers import (
 
 # Initialize logger and API resolver
 logger = Logger()
-app = APIGatewayHttpResolver()
+
+# Configure CORS to allow all origins (since this is a private admin API)
+cors_config = CORSConfig(
+    allow_origin="*",
+    allow_headers=["Content-Type", "Authorization"],
+    max_age=300,
+)
+
+app = APIGatewayHttpResolver(cors=cors_config)
+
+# Cognito configuration
+COGNITO_REGION = os.environ.get("COGNITO_REGION", "us-west-2")
+COGNITO_USER_POOL_ID = os.environ.get("COGNITO_USER_POOL_ID", "us-west-2_YQm2Qh4B9")
+COGNITO_APP_CLIENT_ID = os.environ.get("COGNITO_APP_CLIENT_ID", "7ntm95jv2b3f2mfcmo81e1mavr")
+
+# Cache for JWKS (JSON Web Key Set)
+_jwks_cache = None
+
+
+def get_jwks():
+    """Fetch and cache the JWKS from Cognito."""
+    global _jwks_cache
+    if _jwks_cache is None:
+        jwks_url = f"https://cognito-idp.{COGNITO_REGION}.amazonaws.com/{COGNITO_USER_POOL_ID}/.well-known/jwks.json"
+        logger.info(f"Fetching JWKS from {jwks_url}")
+        response = requests.get(jwks_url)
+        _jwks_cache = response.json()
+    return _jwks_cache
+
+
+def validate_jwt_token(event: dict[str, Any]) -> dict[str, Any]:
+    """
+    Validate JWT token from Authorization header.
+
+    Args:
+        event: API Gateway event
+
+    Returns:
+        Decoded JWT claims if valid
+
+    Raises:
+        UnauthorizedError: If token is missing or invalid
+    """
+    # Get Authorization header
+    headers = event.get("headers", {})
+    auth_header = headers.get("authorization") or headers.get("Authorization")
+
+    if not auth_header:
+        logger.warning("Missing Authorization header")
+        raise UnauthorizedError("Missing Authorization header")
+
+    # Extract token from "Bearer <token>"
+    parts = auth_header.split()
+    if len(parts) != 2 or parts[0].lower() != "bearer":
+        logger.warning("Invalid Authorization header format")
+        raise UnauthorizedError("Invalid Authorization header format")
+
+    token = parts[1]
+
+    try:
+        # Get JWKS
+        jwks = get_jwks()
+
+        # Decode token header to get key ID
+        unverified_header = jwt.get_unverified_header(token)
+        kid = unverified_header.get("kid")
+
+        # Find the matching key
+        key = None
+        for jwk_key in jwks["keys"]:
+            if jwk_key["kid"] == kid:
+                key = jwk_key
+                break
+
+        if not key:
+            logger.warning(f"Public key not found for kid: {kid}")
+            raise UnauthorizedError("Invalid token")
+
+        # Verify and decode the token
+        claims = jwt.decode(
+            token,
+            key,
+            algorithms=["RS256"],
+            audience=COGNITO_APP_CLIENT_ID,
+            issuer=f"https://cognito-idp.{COGNITO_REGION}.amazonaws.com/{COGNITO_USER_POOL_ID}",
+        )
+
+        logger.info(f"Token validated for user: {claims.get('cognito:username')}")
+        return claims
+
+    except JWTError as e:
+        logger.warning(f"JWT validation failed: {e}")
+        raise UnauthorizedError("Invalid or expired token")
+    except Exception as e:
+        logger.exception(f"Unexpected error during token validation: {e}")
+        raise UnauthorizedError("Token validation failed")
 
 
 @app.get("/v1/contact/admin/messages")
@@ -310,5 +412,34 @@ def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
         API Gateway response with status code and body
     """
     logger.info(f"Received event: {json.dumps(event)}")
+
+    # Get HTTP method
+    request_context = event.get("requestContext", {})
+    http_context = request_context.get("http", {})
+    method = http_context.get("method", "")
+
+    # OPTIONS requests handled automatically by APIGatewayHttpResolver(cors=True)
+    # All other requests require JWT validation
+    if method != "OPTIONS":
+        try:
+            # Validate JWT token
+            claims = validate_jwt_token(event)
+            logger.info(f"Authenticated user: {claims.get('email')}")
+        except UnauthorizedError as e:
+            logger.warning(f"Unauthorized request: {e}")
+            return {
+                "statusCode": 401,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Headers": "Content-Type,Authorization",
+                    "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+                },
+                "body": json.dumps({
+                    "status": 401,
+                    "error": str(e),
+                    "data": None
+                })
+            }
 
     return app.resolve(event, context)

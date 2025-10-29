@@ -58,6 +58,15 @@ class EmailNotificationMethod(NotificationMethod):
             source_ip = contact_data.get('ip_address', 'Unknown')
             contact_type = contact_data.get('contact_type', 'standard')
 
+            # Skip email notifications for homelab-alert types (Discord only)
+            if contact_type == 'homelab-alert':
+                logger.info("Skipping email notification for homelab-alert (Discord only)")
+                return {
+                    'success': True,
+                    'message': 'Email skipped for homelab-alert type (Discord only)',
+                    'skipped': True
+                }
+
             # Generate email based on contact type
             if contact_type == 'consulting':
                 company_name = contact_data.get('company_name', 'N/A')
@@ -66,11 +75,19 @@ class EmailNotificationMethod(NotificationMethod):
                     contact_name, contact_email, contact_message,
                     user_agent, source_ip, company_name, industry
                 )
-            else:
+            elif contact_type == 'standard':
                 email_subject, email_body = self._generate_standard_email(
                     contact_name, contact_email, contact_message,
                     user_agent, source_ip
                 )
+            else:
+                # For unknown types, skip email gracefully
+                logger.warning(f"Unknown contact_type: {contact_type}, skipping email")
+                return {
+                    'success': True,
+                    'message': f'Email skipped for unknown type: {contact_type}',
+                    'skipped': True
+                }
 
             # Send via SES
             response = self.ses.send_email(

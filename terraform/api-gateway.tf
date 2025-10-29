@@ -46,21 +46,6 @@ resource "aws_lambda_permission" "lambda_permission" {
 }
 
 ################################
-# Admin Lambda Authorizer
-################################
-
-# Use shared lambda-authorizer module from jscom-tf-modules
-module "contact-admin-authorizer" {
-  source = "git::https://github.com/johnsosoka/jscom-tf-modules.git//modules/lambda-authorizer?ref=main"
-
-  function_name              = "contact-admin-authorizer"
-  api_gateway_id             = local.api_gateway_id
-  api_gateway_execution_arn  = local.execution_arn
-  admin_api_key_value        = var.admin_api_key_value
-  project_name               = local.project_name
-}
-
-################################
 # Admin Lambda Integration
 ################################
 
@@ -73,13 +58,11 @@ resource "aws_apigatewayv2_integration" "admin_integration" {
 }
 
 # Catch-all route for admin endpoints: ANY /v1/contact/admin/{proxy+}
+# JWT validation happens in Lambda function, not at API Gateway level
 resource "aws_apigatewayv2_route" "admin_route" {
   api_id    = local.api_gateway_id
   route_key = "ANY /v1/contact/admin/{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.admin_integration.id}"
-
-  authorization_type = "CUSTOM"
-  authorizer_id      = module.contact-admin-authorizer.authorizer_id
 }
 
 # Lambda permission for API Gateway to invoke admin Lambda

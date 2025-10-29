@@ -66,11 +66,17 @@ class DiscordNotificationMethod(NotificationMethod):
                     contact_name, contact_email, contact_message,
                     user_agent, source_ip, company_name, industry
                 )
-            else:
+            elif contact_type == 'homelab-alert':
+                message_content = self._format_homelab_alert(contact_data)
+            elif contact_type == 'standard':
                 message_content = self._format_standard_message(
                     contact_name, contact_email, contact_message,
                     user_agent, source_ip
                 )
+            else:
+                # Fallback for unknown types
+                logger.warning(f"Unknown contact_type: {contact_type}, using generic format")
+                message_content = self._format_generic_message(contact_data)
 
             # Send to Discord webhook
             status_code = self._post_to_discord_webhook(self.webhook_url, message_content)
@@ -156,3 +162,54 @@ John Has Been Contacted."""
 
 John Has Been Consulted!"""
         return message
+
+    def _format_homelab_alert(self, alert_data: Dict[str, Any]) -> str:
+        """Format homelab alert message for Discord."""
+        alert_type = alert_data.get('alert_type', 'unknown')
+        message = alert_data.get('contact_message', 'No message provided')
+        source = alert_data.get('source', 'unknown')
+        timestamp = alert_data.get('timestamp', 'N/A')
+
+        # Build metadata section dynamically
+        metadata_lines = []
+
+        # Common fields
+        if 'ip_address' in alert_data:
+            metadata_lines.append(f"**IP Address:** {alert_data['ip_address']}")
+        if 'previous_ip' in alert_data:
+            metadata_lines.append(f"**Previous IP:** {alert_data['previous_ip']}")
+        if 'domain' in alert_data:
+            metadata_lines.append(f"**Domain:** {alert_data['domain']}")
+
+        # Additional metadata
+        metadata_lines.append(f"**Source:** {source}")
+        metadata_lines.append(f"**Timestamp:** {timestamp}")
+
+        metadata = "\n".join(metadata_lines)
+
+        return f"""🏠 **Homelab Alert: {alert_type.replace('-', ' ').title()}**
+
+{message}
+
+---
+{metadata}"""
+
+    def _format_generic_message(self, contact_data: Dict[str, Any]) -> str:
+        """Format generic message for unknown contact types (safe fallback)."""
+        contact_type = contact_data.get('contact_type', 'unknown')
+        message = contact_data.get('contact_message', 'No message provided')
+
+        # Extract all available metadata
+        metadata_lines = []
+        for key, value in contact_data.items():
+            if key not in ['contact_type', 'contact_message']:
+                metadata_lines.append(f"**{key.replace('_', ' ').title()}:** {value}")
+
+        metadata = "\n".join(metadata_lines) if metadata_lines else "No additional metadata"
+
+        return f"""**New Notification: {contact_type.replace('-', ' ').title()}**
+
+{message}
+
+---
+{metadata}"""

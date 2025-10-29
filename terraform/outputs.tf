@@ -75,3 +75,8 @@ output "contact_notify_queue_url" {
   description = "URL of the contact notify SQS queue"
   value       = aws_sqs_queue.contact_notify_queue.id
 }
+
+output "contact_notify_queue_arn" {
+  description = "ARN of the contact notify SQS queue (for cross-project permissions)"
+  value       = aws_sqs_queue.contact_notify_queue.arn
+}

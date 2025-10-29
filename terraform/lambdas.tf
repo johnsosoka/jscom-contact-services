@@ -191,6 +191,9 @@ module "contact-admin" {
   environment_variables = {
     ALL_CONTACT_MESSAGES_TABLE_NAME = aws_dynamodb_table.all_contact_messages.name
     BLOCKED_CONTACTS_TABLE_NAME     = aws_dynamodb_table.blocked_contacts.name
+    COGNITO_USER_POOL_ID            = "us-west-2_YQm2Qh4B9"
+    COGNITO_REGION                  = "us-west-2"
+    COGNITO_APP_CLIENT_ID           = "7ntm95jv2b3f2mfcmo81e1mavr"
   }
 
   tags = {

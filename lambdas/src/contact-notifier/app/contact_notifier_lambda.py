@@ -31,9 +31,12 @@ def lambda_handler(event, context):
     # Parse the message body
     message_body = json.loads(message)
 
-    # Validate the required field
-    contact_message = message_body.get('contact_message')
-    if not contact_message:
+    # Validate contact_message for contact form types (optional for alerts)
+    contact_type = message_body.get('contact_type', 'standard')
+    contact_message = message_body.get('contact_message', '')
+
+    # For non-alert types, contact_message is required
+    if not contact_message and not contact_type.endswith('-alert'):
         logger.error("Missing required field: contact_message")
         return {
             'statusCode': 400,
