@@ -2,6 +2,7 @@ import json
 import boto3
 import os
 import base64
+from app.turnstile import validate_turnstile
 
 sqs = boto3.client('sqs')
 queue_url = os.environ['CONTACT_MESSAGE_QUEUE_URL']
@@ -14,13 +15,33 @@ def lambda_handler(event, context):
     else:
         payload = json.loads(event['body'])
 
-    contact_email = payload.get('contact_email')
-    contact_message = payload.get('contact_message')
-    contact_name = payload.get('contact_name')
-
     # Extract IP address and user agent from event
     ip_address = event['requestContext']['http']['sourceIp']
     user_agent = event['requestContext']['http']['userAgent']
+
+    # Extract Turnstile parameters
+    turnstile_token = payload.get('turnstile_token')
+    turnstile_site = payload.get('turnstile_site')
+
+    # Validate Turnstile token presence
+    if not turnstile_token:
+        print("Turnstile token is missing")
+        return {
+            'statusCode': 403,
+            'body': json.dumps({'error': 'Security verification required'})
+        }
+
+    # Validate Turnstile token
+    if not validate_turnstile(turnstile_token, ip_address, turnstile_site or ''):
+        print(f"Turnstile validation failed for IP: {ip_address}")
+        return {
+            'statusCode': 403,
+            'body': json.dumps({'error': 'Security verification failed'})
+        }
+
+    contact_email = payload.get('contact_email')
+    contact_message = payload.get('contact_message')
+    contact_name = payload.get('contact_name')
 
     # Validate required fields
     if not contact_message:

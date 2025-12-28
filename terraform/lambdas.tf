@@ -18,11 +18,18 @@ module "contact-listener" {
   attach_policy_json = true
   policy_json = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect   = "Allow"
-      Action   = ["sqs:SendMessage"]
-      Resource = aws_sqs_queue.contact_message_queue.arn
-    }]
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["sqs:SendMessage"]
+        Resource = aws_sqs_queue.contact_message_queue.arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["ssm:GetParameter"]
+        Resource = "arn:aws:ssm:us-west-2:*:parameter/jscom/turnstile/*"
+      }
+    ]
   })
 
   environment_variables = {
