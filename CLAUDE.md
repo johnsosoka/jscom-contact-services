@@ -670,6 +670,30 @@ All Lambda functions follow least-privilege principle:
 - No public IP addresses or VPC required (serverless)
 - Lambda functions access AWS services via IAM roles (no credentials in code)
 
+## Turnstile Integration
+
+This project uses Cloudflare Turnstile for CAPTCHA protection on contact form submissions.
+
+**Key Components:**
+- `lambdas/src/contact-listener/app/turnstile.py` - Validation module with site-to-secret mapping
+- `SITE_SECRET_MAP` - Maps site domains to AWS Parameter Store paths
+- Parameter Store pattern: `/jscom/turnstile/{site-name}/secret-key`
+
+**Adding a New Site:**
+
+See comprehensive guide at `docs/turnstile-integration.md` for:
+- Step-by-step setup instructions
+- Frontend integration examples (Next.js, Jekyll, vanilla JS)
+- Testing with Cloudflare test keys
+- Troubleshooting common issues
+- Security best practices
+
+**Quick Add:**
+1. Create Turnstile widget in Cloudflare Dashboard
+2. Store secret: `aws ssm put-parameter --name "/jscom/turnstile/{site}/secret-key" --value "SECRET" --type SecureString`
+3. Add to `SITE_SECRET_MAP` in `turnstile.py`
+4. Deploy via Terraform
+
 ## Additional Documentation
 
 See `docs/llm/` for additional LLM-focused documentation and `llm_docs/` for agent reports and findings.
