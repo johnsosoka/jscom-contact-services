@@ -2,7 +2,7 @@ import json
 import boto3
 import os
 import base64
-from app.turnstile import validate_turnstile
+from turnstile import validate_turnstile
 
 sqs = boto3.client('sqs')
 queue_url = os.environ['CONTACT_MESSAGE_QUEUE_URL']
